@@ -1,0 +1,30 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    gap: 10px;
+  }
+  
+  .grid-item {
+    width: 100px;
+    height: 100px;
+    background-color: #ddd;
+    border: 1px solid #aaa;
+  }
+  
+  #draggable {
+    width: 100px;
+    height: 100px;
+    background-color: #f44336;
+    position: absolute;
+    cursor: move;
+  }
+  
