@@ -2,6 +2,13 @@ body {
   width: fit-content;
   height: fit-content;
 }
+
+#btn_container {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
 #screenshots {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

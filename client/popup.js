@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
 function addNewScreenshot(screenshot_container, screenshot, index) {
   const new_sc_element = document.createElement("div");
   const img_element = document.createElement("img");
@@ -119,4 +120,9 @@ const onDelete = async (e) => {
       viewScreenshots(screenshots);
     });
   });
+};
+
+const send_btn = document.getElementById("send_btn");
+send_btn.onclick = (e) => {
+  chrome.runtime.sendMessage({type: "send"});
 };

@@ -11,6 +11,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
           chrome.storage.local.get({ screenshots: [] }, (result) => {
             const screenshots = result.screenshots;
             screenshots.push(dataUrl);
+            console.log(dataUrl);
             chrome.storage.local.set({ screenshots }, () => {
               console.log("Screenshot captured and stored.");
             });
@@ -22,8 +23,52 @@ chrome.commands.onCommand.addListener((command, tab) => {
 });
 
 chrome.runtime.onSuspend.addListener(() => {
-  console.log('Extension is being suspended. Clearing storage...');
+  console.log("Extension is being suspended. Clearing storage...");
   chrome.storage.local.clear(() => {
-    console.log('Storage cleared.');
+    console.log("Storage cleared.");
   });
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  const { type } = message;
+  if (type === "send") {
+    chrome.storage.local.get({ screenshots: [] }, (result) => {
+      const screenshots = result.screenshots;
+      const socket = new WebSocket("ws://localhost:8000/ws");
+
+      socket.onopen = () => {
+        console.log("WebSocket connection established");
+
+        screenshots.forEach((screenshot, index) => {
+          socket.send(JSON.stringify({ type: "image", image: screenshot }));
+          console.log("send");
+        });
+
+        // Notify the server that all images have been sent
+        socket.send(JSON.stringify({ type: "finish" }));
+      };
+
+      socket.onmessage = (event) => {
+        const response = JSON.parse(event.data);
+        console.log("Server response:", response);
+
+        if (response.status === "PDF created") {
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = response.url;
+          a.download = "screenshots.pdf";
+          document.body.appendChild(a);
+          a.click();
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+    });
+  }
 });
