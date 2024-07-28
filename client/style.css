@@ -1,8 +1,8 @@
-body{
+body {
   width: fit-content;
   height: fit-content;
 }
-#screenshots{
+#screenshots {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: auto;
@@ -10,18 +10,20 @@ body{
   gap: 10px;
   align-items: center;
 }
-.screenshot{
+.screenshot {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 10rem;
   width: 7rem;
-  border: 1px solid #999;
   box-sizing: border-box;
+  transition: transform 2s ease, opacity 3s ease;
 }
-#sc_pic{
+#sc_pic {
   height: 100%;
   width: 100%;
 }
-.buttons{
+.buttons {
   position: absolute;
   top: -5px;
   right: -5px;
@@ -30,5 +32,7 @@ body{
 }
 
 .draggable.dragging {
-  opacity: .5;
+  opacity: 0.5;
+  transform: scale(1.05); /* Slightly increase size when dragging */
+  transition: transform 0.2s ease, opacity 0.2s ease; /* Ensure transition applies during dragging */
 }

@@ -1,5 +1,3 @@
-console.log("PopUp");
-
 document.addEventListener("DOMContentLoaded", () => {
   chrome.storage.local.get({ screenshots: [] }, (result) => {
     const screenshots = result.screenshots;
@@ -14,6 +12,7 @@ function addNewScreenshot(screenshot_container, screenshot, index) {
 
   new_sc_element.className = "screenshot";
   new_sc_element.id = "sc_no-" + index;
+  new_sc_element.draggable = true;
   img_element.src = screenshot;
   img_element.id = "sc_pic";
   delete_btn.src = "assets/delete.png";
@@ -40,6 +39,11 @@ const viewScreenshots = (screenshots) => {
   }
 
   //Dragging logic------------------
+
+  function insertAfter(newNode, referenceNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+  }
+
   const screenshots_elements = document.querySelectorAll(".screenshot");
   screenshots_elements.forEach((screenshot) => {
     screenshot.addEventListener("dragstart", () => {
@@ -53,24 +57,22 @@ const viewScreenshots = (screenshots) => {
 
   screenshot_container.addEventListener("dragover", (e) => {
     e.preventDefault();
-    const after_element = getDragAfterElement(
+    const after_elementobj = getDragAfterElement(
       screenshot_container,
       e.clientY,
       e.clientX
     );
-   
+    const after_element = after_elementobj.element;
+    const after_element_coordinates = after_elementobj.co_ordinates;
     const draggable_sc = document.querySelector(".dragging");
-    if(after_element !== null && after_element !== undefined){
+    if (after_element !== null && after_element !== undefined) {
       console.log(after_element);
-      screenshot_container.insertBefore(draggable_sc, after_element);
+      if (e.clientX > after_element_coordinates[0]) {
+        insertAfter(draggable_sc, after_element);
+      } else {
+        screenshot_container.insertBefore(draggable_sc, after_element);
+      }
     }
-    
-    // if (after_element == null) {
-    //   screenshot_container.appendChild(draggable_sc);
-    // } 
-    // else {
-    //   screenshot_container.insertBefore(draggable_sc, after_element);
-    // }
   });
 };
 
@@ -84,21 +86,25 @@ function getDragAfterElement(container, y, x) {
       const box = child.getBoundingClientRect();
       const box_coordinates = [
         box.left + box.width / 2,
-        box.top + box.height / 2
-      ]
-      const dist = Math.sqrt(Math.pow(x-box_coordinates[0], 2) + Math.pow(y-box_coordinates[1], 2));
-      // const offset = (y - box.top - box.height / 2) + (x - box.left - box.width / 2);
-      // const offset = x - box.left - box.width / 2
-      // console.log(dist);
-      if (dist < 40 && dist < closest.distance) {
-        console.log(dist);
-        return { distance: dist, element: child };
+        box.top + box.height / 2,
+      ];
+      const dist = Math.sqrt(
+        Math.pow(x - box_coordinates[0], 2) +
+          Math.pow(y - box_coordinates[1], 2)
+      );
+      console.log(dist);
+      if (dist < 60 && dist < closest.distance) {
+        return {
+          distance: dist,
+          element: child,
+          co_ordinates: box_coordinates,
+        };
       } else {
         return closest;
       }
     },
     { distance: Number.POSITIVE_INFINITY }
-  ).element;
+  );
 }
 
 //Dragging end------------------------------
