@@ -40,14 +40,19 @@ async def websocket_endpoint(websocket: WebSocket):
             elif message['type'] == 'finish':
                 # Create a PDF with the images
 
+                image_folder = "images/"
+
+                # Get the list of image files in the directory
+                image_files = [os.path.join(image_folder, i) for i in os.listdir(image_folder) if i.endswith(".png")]
+
+                # Create the PDF
                 with open(pdf_file_path, "wb") as file:
-                     file.write(img2pdf.convert([i for i in os.listdir("images/") if i.endswith(
-                    ".png")]))
+                    file.write(img2pdf.convert(image_files))
 
                 # Clean up temp images
                 for temp_image in temp_images:
                     os.remove(temp_image)
-                
+        
                 await websocket.send_text(json.dumps({"status": "PDF created", "url": f"http://localhost:8000/{pdf_file_path}"}))
                 break
     except Exception as e:

@@ -53,13 +53,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log("Server response:", response);
 
         if (response.status === "PDF created") {
-          const a = document.createElement("a");
-          a.style.display = "none";
-          a.href = response.url;
-          a.download = "screenshots.pdf";
-          document.body.appendChild(a);
-          a.click();
+          chrome.downloads.download(
+            {
+              url: response.url,
+            },
+            (downloadId) => {
+              if (downloadId) {
+                console.log(`Download started with ID: ${downloadId}`);
+              } else {
+                console.log("Failed to start download");
+              }
+            }
+          );
         }
+        chrome.storage.local.clear(() => {
+          console.log("Storage cleared.");
+        });
       };
 
       socket.onerror = (error) => {
