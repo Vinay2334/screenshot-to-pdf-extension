@@ -7,7 +7,17 @@
     "default_icon": { "16": "ct.png" },
     "default_popup": "index.html"
   },
-  "permissions": ["activeTab", "tabs", "scripting", "downloads", "storage", "unlimitedStorage"],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "downloads",
+    "storage",
+    "unlimitedStorage"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://127.0.0.1:8000 ws://127.0.0.1:8000"
+  },
   "content_scripts": [
     {
       "js": ["scripts/content.js"],

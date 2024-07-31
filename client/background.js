@@ -34,7 +34,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (type === "send") {
     chrome.storage.local.get({ screenshots: [] }, (result) => {
       const screenshots = result.screenshots;
-      const socket = new WebSocket("ws://localhost:8000/ws");
+      const socket = new WebSocket("ws://127.0.0.1:8000/ws");
 
       socket.onopen = () => {
         console.log("WebSocket connection established");
