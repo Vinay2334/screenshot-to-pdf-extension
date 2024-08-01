@@ -66,9 +66,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
           );
         }
-        chrome.storage.local.clear(() => {
-          console.log("Storage cleared.");
-        });
+        // chrome.storage.local.clear(() => {
+        //   console.log("Storage cleared.");
+        // });
       };
 
       socket.onerror = (error) => {
