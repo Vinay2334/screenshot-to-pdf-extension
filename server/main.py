@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse, PlainTextResponse
+from utils import extract_index
 import os
 import base64
 import img2pdf
@@ -32,8 +33,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     os.makedirs("images")
 
                 image_data = base64.b64decode(base64_string)
-                temp_image_path = os.path.join(image_folder, f"temp_images_{len(temp_images)}.png")
-                # temp_image_path = f"images/temp_image_{len(temp_images)}.png"
+                temp_image_path = os.path.join(image_folder, f"{len(temp_images)}.png")
                 with open(temp_image_path, "wb") as f:
                     f.write(image_data)
                 temp_images.append(temp_image_path)
@@ -44,6 +44,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 image_files = [os.path.join(image_folder, i) for i in os.listdir(image_folder) if i.endswith(".png")]
 
                 # Create the PDF
+                image_files = sorted(image_files, key=extract_index)
+                print(image_files)
                 with open(pdf_file_path, "wb") as file:
                     file.write(img2pdf.convert(image_files))
 
@@ -55,7 +57,20 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"Connection closed: {e}")
     finally:
         await websocket.close()
+        if os.path.exists(pdf_file_path):
+            os.remove(pdf_file_path)
 
 @app.get("/output.pdf")
 async def get_pdf():
-    return FileResponse(pdf_file_path, media_type='application/pdf', filename='screenshots.pdf')
+    response = FileResponse(pdf_file_path, media_type='application/pdf', filename='screenshots.pdf')
+    # response.headers["file-cleanup"] = "true"
+    return response
+
+# @app.middleware("http")
+# async def add_cleanup_header(request, call_next):
+#     response = await call_next(request)
+#     if response.headers.get("file-cleanup") == "true":
+#         if os.path.exists(pdf_file_path):
+#             os.remove(pdf_file_path)
+#             print("output.pdf removed")
+#     return response

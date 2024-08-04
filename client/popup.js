@@ -5,6 +5,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+const proximity_value = 60;
+let draggable_sc = null;
+
+
 function addNewScreenshot(screenshot_container, screenshot, index) {
   const new_sc_element = document.createElement("div");
   const img_element = document.createElement("img");
@@ -27,6 +31,17 @@ function addNewScreenshot(screenshot_container, screenshot, index) {
   new_sc_element.appendChild(delete_btn);
   new_sc_element.appendChild(img_element);
   screenshot_container.appendChild(new_sc_element);
+
+  // proximity_radius = document.createElement("div");
+  // proximity_radius.className = "proximity-radius";
+  // document.body.appendChild(proximity_radius);
+
+  const box = new_sc_element.getBoundingClientRect();
+  const box_coordinates = [box.left + box.width / 2, box.top + box.height / 2];
+
+  // proximity_radius.style.display = "block";
+  // proximity_radius.style.left = `${box_coordinates[0] - proximity_value}px`;
+  // proximity_radius.style.top = `${box_coordinates[1] - proximity_value}px`;
 }
 
 const viewScreenshots = (screenshots) => {
@@ -40,10 +55,6 @@ const viewScreenshots = (screenshots) => {
 
   //Dragging logic start------------------
 
-  let draggable_sc = null;
-  let is_right = false;
-  let closest_element = null;
-
   function insertAfter(newNode, referenceNode) {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
   }
@@ -54,27 +65,32 @@ const viewScreenshots = (screenshots) => {
       screenshot.classList.add("dragging");
     });
 
-    screenshot.addEventListener("dragend", () => {
-      console.log("ENding");
+    screenshot.addEventListener("dragend", (e) => {
+      e.preventDefault();
       screenshot.classList.remove("dragging");
-      console.log(closest_element);
-      if (closest_element !== null && closest_element !== undefined) {
-        const draggable_sc_idx = draggable_sc.id.split("-")[1];
-        const closest_element_idx = closest_element.id.split("-")[1];
-        console.log("Draggable idx", draggable_sc_idx);
-        console.log("After idx", closest_element_idx);
-        const [draggable_sc_element] = screenshots.splice(draggable_sc_idx, 1);
-        console.log(screenshots);
-        if (is_right) {
-          screenshots.splice(closest_element_idx + 1, 0, draggable_sc_element);
-        } else {
-          screenshots.splice(closest_element_idx, 0, draggable_sc_element);
-        }
-        chrome.storage.local.set({ screenshots }, () => {
-          console.log("Screenshot rearranged.");
-        });
-        viewScreenshots(screenshots);
+
+      const draggable_sc_idx = parseInt(draggable_sc.id.split("-")[1]);
+      const next_element = draggable_sc.nextSibling;
+      const next_element_idx = next_element
+        ? parseInt(next_element.id.split("-")[1])
+        : screenshots.length;
+      console.log(next_element_idx);
+      const [draggable_sc_image] = screenshots.splice(draggable_sc_idx, 1);
+
+      //If drop position is after the drag position then the index of the drop position would have decreased by 1 as we have taken an element out from the preceding index so decrease the drop position by 1
+      if (next_element_idx > draggable_sc_idx) {
+        screenshots.splice(next_element_idx - 1, 0, draggable_sc_image);
       }
+      // Else drop it normally as the index of positions before the drag index is not changed
+      else {
+        screenshots.splice(next_element_idx, 0, draggable_sc_image);
+      }
+      chrome.storage.local.set({ screenshots: screenshots }, () => {
+        console.log("Screenshot rearranged.");
+        chrome.storage.local.get({ screenshots: [] }, (result) => {
+          viewScreenshots(result.screenshots);
+        });
+      });
     });
   });
 
@@ -87,11 +103,12 @@ const viewScreenshots = (screenshots) => {
     );
     const after_element = after_elementobj?.element;
     const after_element_coordinates = after_elementobj?.co_ordinates;
+
     draggable_sc = document.querySelector(".dragging");
 
     if (after_element !== null && after_element !== undefined) {
-      closest_element = after_element;
-      if (e.clientX > after_element_coordinates[0]) {
+      draggable_sc_element_x = e.clientX;
+      if (draggable_sc_element_x > after_element_coordinates[0]) {
         is_right = true;
         insertAfter(draggable_sc, after_element);
       } else {
@@ -118,7 +135,7 @@ function getDragAfterElement(container, y, x) {
         Math.pow(x - box_coordinates[0], 2) +
           Math.pow(y - box_coordinates[1], 2)
       );
-      if (dist < 60 && dist < closest.distance) {
+      if (dist < proximity_value && dist < closest.distance) {
         return {
           distance: dist,
           element: child,
