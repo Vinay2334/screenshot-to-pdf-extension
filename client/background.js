@@ -1,8 +1,10 @@
 chrome.commands.onCommand.addListener((command, tab) => {
   console.log(`Command: ${command}`);
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     if (tabs.length > 0) {
       const tab = tabs[0];
+
+      chrome.tabs.sendMessage(tab.id, { type: "capture" });
 
       chrome.tabs.captureVisibleTab(
         tab.windowId,
