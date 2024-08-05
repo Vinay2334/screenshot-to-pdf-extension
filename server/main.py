@@ -57,8 +57,8 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"Connection closed: {e}")
     finally:
         await websocket.close()
-        if os.path.exists(pdf_file_path):
-            os.remove(pdf_file_path)
+        # if os.path.exists(pdf_file_path):
+        #     os.remove(pdf_file_path)
 
 @app.get("/output.pdf")
 async def get_pdf():

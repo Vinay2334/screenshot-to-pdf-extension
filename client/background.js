@@ -4,7 +4,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
     if (tabs.length > 0) {
       const tab = tabs[0];
 
-      chrome.tabs.sendMessage(tab.id, { type: "capture" });
+      // chrome.tabs.sendMessage(tab.id, { type: "capture" });
 
       chrome.tabs.captureVisibleTab(
         tab.windowId,
@@ -16,6 +16,24 @@ chrome.commands.onCommand.addListener((command, tab) => {
             console.log(dataUrl);
             chrome.storage.local.set({ screenshots }, () => {
               console.log("Screenshot captured and stored.");
+              chrome.scripting.executeScript(
+                {
+                  target: { tabId: tab.id },
+                  files: ["notification.js"],
+                },
+                () => {
+                  chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    function: () => {
+                      if (window.showNotification) {
+                        window.showNotification(
+                          "Screenshot captured."
+                        );
+                      }
+                    },
+                  });
+                }
+              );
             });
           });
         }
