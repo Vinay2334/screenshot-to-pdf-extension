@@ -1,12 +1,31 @@
 body {
+  min-width: 15rem;
   width: fit-content;
   height: fit-content;
+  background: url("./assets/background.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 #btn_container {
-  display: flex;
+  display: none;
   justify-content: center;
   padding: 10px;
+}
+
+#btn_container.show{
+  display: flex;
+}
+
+#message_container{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+
+#intro_box.hidden{
+  display: none;
 }
 
 #screenshots {
@@ -53,24 +72,24 @@ body {
 }
 
 #clear-all-container {
-  visibility: hidden;
+  display: none;
   position: relative;
   height: 25px;
 }
 
 #clear-all-container.show {
-  visibility: visible;
+  display: block;
 }
 
 #clear-all {
   position: absolute;
   right: 10px;
-  color: whitesmoke;
+  color: blue;
 }
 
 #clear-all:hover {
   cursor: pointer;
-  color: wheat;
+  color: blueviolet;
 }
 
 #sc_loader {
@@ -96,4 +115,18 @@ body {
   height: 120px;
   pointer-events: none; /* So it doesn't interfere with drag events */
   z-index: 1000; /* Ensure it is above other elements */
+}
+
+#pre_shortcut {
+  margin: 0;
+  width: fit-content;
+  height: fit-content;
+  background-color: #2d2d2d;  
+  color: #f8f8f2;
+  border-radius: 5px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+code{
+  white-space: normal;
 }

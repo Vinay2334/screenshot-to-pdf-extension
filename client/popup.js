@@ -1,3 +1,14 @@
+const proximity_value = 60;
+let draggable_sc = null;
+const send_btn = document.getElementById("send_btn");
+const btn_container = document.getElementById("btn_container");
+const message_container = document.getElementById("message_container");
+const clear_all_element = document.getElementById("clear-all-container");
+const clear_all_tag = document.getElementById("clear-all");
+const shortcut_keys = document.getElementById("shortcut_key");
+const shortcut_change_link = document.getElementById("shortcut_change_link");
+const intro_box = document.getElementById("intro_box");
+
 document.addEventListener("DOMContentLoaded", () => {
   chrome.storage.local.get({ screenshots: [] }, (result) => {
     const screenshots = result.screenshots;
@@ -5,17 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-const proximity_value = 60;
-let draggable_sc = null;
-const clear_all_element = document.getElementById("clear-all-container");
-const clear_all_tag = document.getElementById("clear-all");
-
 clear_all_tag.addEventListener("click", (e) => {
   chrome.storage.local.remove("screenshots", () => {
-    chrome.storage.local.get({ screenshots: [] }, (result) => {
-      const screenshots = result.screenshots;
-      viewScreenshots(screenshots);
-    });
+    viewScreenshots();
   });
 });
 
@@ -66,17 +69,37 @@ function addNewScreenshot(screenshot_container, screenshot, status, index) {
   // proximity_radius.style.top = `${box_coordinates[1] - proximity_value}px`;
 }
 
-const viewScreenshots = (screenshots) => {
+const viewScreenshots = (screenshots = []) => {
   const screenshot_container = document.getElementById("screenshots");
   screenshot_container.innerHTML = "";
 
   if (screenshots.length > 0) {
+    btn_container.className = "show";
+    intro_box.className = "hidden";
     clear_all_element.className = "show";
     screenshots.map((sc, index) => {
       const { dataUrl, status } = sc;
       addNewScreenshot(screenshot_container, dataUrl, status, index);
     });
   } else {
+    chrome.commands.getAll((commands) => {
+      const screenshotCommand = commands.find(
+        (command) => command.name === "take-screenshot"
+      );
+
+      if (screenshotCommand) {
+        shortcut_keys.textContent = screenshotCommand.shortcut || "Not set";
+      } else {
+        shortcut_keys.textContent = "Not command found";
+      }
+    });
+    //Navigatet to chrome shortcuts menu
+    shortcut_change_link.addEventListener("click", (event) => {
+      event.preventDefault(); // Prevent default link behavior
+      chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
+    });
+    btn_container.className = "";
+    intro_box.className = "";
     clear_all_element.className = "";
     // clear_all_element.className = clear_all_element.className.replace("show", "");
   }
@@ -189,7 +212,6 @@ const onDelete = async (e) => {
   });
 };
 
-const send_btn = document.getElementById("send_btn");
 send_btn.onclick = (e) => {
   chrome.runtime.sendMessage({ type: "send" });
 };
