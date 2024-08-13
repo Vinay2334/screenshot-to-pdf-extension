@@ -29,15 +29,17 @@ async def websocket_endpoint(websocket: WebSocket):
                 if "data:image" in base64_string:
                     base64_string = base64_string.split(",")[1]
 
-                if not os.path.exists("images"):
-                    os.makedirs("images")
+                    if not os.path.exists("images"):
+                        os.makedirs("images")
 
-                image_data = base64.b64decode(base64_string)
-                temp_image_path = os.path.join(image_folder, f"{len(temp_images)}.png")
-                with open(temp_image_path, "wb") as f:
-                    f.write(image_data)
-                temp_images.append(temp_image_path)
-                await websocket.send_text(json.dumps({"status": "image received"}))
+                    image_data = base64.b64decode(base64_string)
+                    temp_image_path = os.path.join(image_folder, f"{len(temp_images)}.png")
+                    with open(temp_image_path, "wb") as f:
+                        f.write(image_data)
+                    temp_images.append(temp_image_path)
+                    await websocket.send_text(json.dumps({"status": "image received"}))
+                else:
+                    await websocket.send_text(json.dumps({"error": "Invalid Image data"}))
             
             elif message['type'] == 'finish':
                 # Get the list of image files in the directory

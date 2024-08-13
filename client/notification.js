@@ -1,61 +1,67 @@
-function showNotification(message) {
+function showNotification() {
   // Create a notification element
-  let snackbar = document.getElementById("snackbar");
+  let snackbar = document.getElementById("sc_snackbar");
+  let image = document.getElementById("snackbar_image");
   if (!snackbar) {
     snackbar = document.createElement("div");
-    snackbar.id = "snackbar";
+    image = document.createElement("img");
+    image.id = "snackbar_image";
+    image.src = "https://res.cloudinary.com/diu5vyuxy/image/upload/v1723394284/cjxma2iulo7espgdotsj.png";
+    snackbar.id = "sc_snackbar";
     document.body.appendChild(snackbar);
+    snackbar.appendChild(image);
 
     // Add the CSS styles directly in JavaScript
     const style = document.createElement("style");
     style.textContent = `
-      #snackbar {
+      #sc_snackbar {
         visibility: hidden; /* Hidden by default. Visible on click */
-        min-width: 250px; /* Set a default minimum width */
+        width: fit-content; /* Set a default minimum width */
         margin-left: -125px; /* Divide value of min-width by 2 */
-        background-color: #333; /* Black background color */
-        color: #fff; /* White text color */
+        background-color: white;
         text-align: center; /* Centered text */
         border-radius: 2px; /* Rounded borders */
-        padding: 16px; /* Padding */
+        padding: 5px; /* Padding */
         position: fixed; /* Sit on top of the screen */
         z-index: 5000; /* Add a z-index if needed */
         left: 50%; /* Center the snackbar */
-        font-size: 15px;
+        border-radius: 50%;
+      }
+      
+      #snackbar_image{
+      width: 50px;
+      height: 50px;
       }
 
       /* Show the snackbar when clicking on a button (class added with JavaScript) */
-      #snackbar.show {
+      #sc_snackbar.show {
         visibility: visible; /* Show the snackbar */
-        animation: fadein 0.7s, fadeout 0.7s
+        animation: fadein 1s, fadeout 0.8s
       }
 
       /* Animations to fade the snackbar in and out */
       @-webkit-keyframes fadein {
-        from {top: 0; opacity: 0;}
-        to {top: 0; opacity: 1;}
+        from {top: 3px; opacity: 0;}
+        to {top: 12px; opacity: 1;}
       }
 
       @keyframes fadein {
-        from {top: 0; opacity: 0;}
-        to {top: 0; opacity: 1;}
+        from {top: 3px; opacity: 0;}
+        to {top: 12px; opacity: 1;}
       }
 
       @-webkit-keyframes fadeout {
-        from {top: 0; opacity: 1;}
-        to {top: 0; opacity: 0;}
+        from {top: 12px; opacity: 1;}
+        to {top: 3px; opacity: 0;}
       }
 
       @keyframes fadeout {
-        from {top: 0; opacity: 1;}
-        to {top: 0; opacity: 0;}
+        from {top: 12px; opacity: 1;}
+        to {top: 3px; opacity: 0;}
       }
     `;
     document.head.appendChild(style);
   }
-
-  // Set the message
-  snackbar.textContent = message;
 
   // Add the 'show' class to trigger the animation
   snackbar.className = "show";
@@ -63,7 +69,7 @@ function showNotification(message) {
   // Remove the 'show' class after the animation duration (3 seconds in total)
   setTimeout(() => {
     snackbar.className = snackbar.className.replace("show", "");
-  }, 600); // 3 seconds for the full visibility including animation
+  }, 700); // 3 seconds for the full visibility including animation
 }
 
 // Expose the function to global scope for injection

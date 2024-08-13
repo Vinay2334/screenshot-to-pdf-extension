@@ -7,12 +7,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const proximity_value = 60;
 let draggable_sc = null;
+const clear_all_element = document.getElementById("clear-all-container");
+const clear_all_tag = document.getElementById("clear-all");
 
+clear_all_tag.addEventListener("click", (e) => {
+  chrome.storage.local.remove("screenshots", () => {
+    chrome.storage.local.get({ screenshots: [] }, (result) => {
+      const screenshots = result.screenshots;
+      viewScreenshots(screenshots);
+    });
+  });
+});
 
-function addNewScreenshot(screenshot_container, screenshot, index) {
+function addNewScreenshot(screenshot_container, screenshot, status, index) {
   const new_sc_element = document.createElement("div");
   const img_element = document.createElement("img");
   const delete_btn = document.createElement("img");
+  const loader = document.createElement("img");
 
   new_sc_element.className = "screenshot";
   new_sc_element.id = "sc_no-" + index;
@@ -21,6 +32,8 @@ function addNewScreenshot(screenshot_container, screenshot, index) {
   img_element.id = "sc_pic";
   delete_btn.src = "assets/delete.png";
   delete_btn.className = "buttons";
+  loader.id = "sc_loader";
+  loader.src = "./assets/loader.gif";
 
   new_sc_element.addEventListener("dblclick", (e) =>
     chrome.tabs.create({ url: screenshot, active: false })
@@ -30,14 +43,23 @@ function addNewScreenshot(screenshot_container, screenshot, index) {
 
   new_sc_element.appendChild(delete_btn);
   new_sc_element.appendChild(img_element);
+  new_sc_element.appendChild(loader);
   screenshot_container.appendChild(new_sc_element);
+
+  if (status == "pending") {
+    loader.className = "pending";
+    img_element.className = "pending";
+  } else if (status == "idle") {
+    loader.className = "";
+    img_element.className = "";
+  }
 
   // proximity_radius = document.createElement("div");
   // proximity_radius.className = "proximity-radius";
   // document.body.appendChild(proximity_radius);
 
-  const box = new_sc_element.getBoundingClientRect();
-  const box_coordinates = [box.left + box.width / 2, box.top + box.height / 2];
+  // const box = new_sc_element.getBoundingClientRect();
+  // const box_coordinates = [box.left + box.width / 2, box.top + box.height / 2];
 
   // proximity_radius.style.display = "block";
   // proximity_radius.style.left = `${box_coordinates[0] - proximity_value}px`;
@@ -47,10 +69,16 @@ function addNewScreenshot(screenshot_container, screenshot, index) {
 const viewScreenshots = (screenshots) => {
   const screenshot_container = document.getElementById("screenshots");
   screenshot_container.innerHTML = "";
+
   if (screenshots.length > 0) {
+    clear_all_element.className = "show";
     screenshots.map((sc, index) => {
-      addNewScreenshot(screenshot_container, sc, index);
+      const { dataUrl, status } = sc;
+      addNewScreenshot(screenshot_container, dataUrl, status, index);
     });
+  } else {
+    clear_all_element.className = "";
+    // clear_all_element.className = clear_all_element.className.replace("show", "");
   }
 
   //Dragging logic start------------------
@@ -87,9 +115,7 @@ const viewScreenshots = (screenshots) => {
       }
       chrome.storage.local.set({ screenshots: screenshots }, () => {
         console.log("Screenshot rearranged.");
-        chrome.storage.local.get({ screenshots: [] }, (result) => {
-          viewScreenshots(result.screenshots);
-        });
+        chrome.storage.local.get({ screenshots: [] });
       });
     });
   });
@@ -167,3 +193,12 @@ const send_btn = document.getElementById("send_btn");
 send_btn.onclick = (e) => {
   chrome.runtime.sendMessage({ type: "send" });
 };
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+    if (key == "screenshots") {
+      console.log(oldValue);
+      viewScreenshots(newValue);
+    }
+  }
+});
