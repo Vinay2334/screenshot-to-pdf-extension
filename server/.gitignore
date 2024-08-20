@@ -2,4 +2,4 @@ env
 images
 __pycache__
 images
-output.pdf
+output*.pdf

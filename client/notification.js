@@ -23,7 +23,7 @@ function showNotification() {
         border-radius: 2px; /* Rounded borders */
         padding: 5px; /* Padding */
         position: fixed; /* Sit on top of the screen */
-        z-index: 5000; /* Add a z-index if needed */
+        z-index: 10000; /* Add a z-index if needed */
         left: 50%; /* Center the snackbar */
         border-radius: 50%;
       }

@@ -62,7 +62,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.storage.local.set({ screenshots: screenshot_val }, () => {
         console.log(chrome.storage.local.get("screenshots"));
         let received_image_idx = 0;
-        const socket = new WebSocket("ws://127.0.0.1:8000/ws");
+        const client_id = Math.floor(Date.now() + Math.random() * (9999 - 1000) + 1000);
+        console.log(client_id);
+        const socket = new WebSocket(`ws://127.0.0.1:8000/ws/${client_id}`);
         // console.log(screenshots);
         socket.onopen = () => {
           console.log("WebSocket connection established");

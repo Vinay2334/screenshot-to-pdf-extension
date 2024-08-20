@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Query
 from fastapi.responses import FileResponse, PlainTextResponse
 from utils import extract_index
 import os
@@ -6,31 +6,32 @@ import base64
 import img2pdf
 import json
 import shutil
+import uuid
 
 app = FastAPI()
-pdf_file_path = 'output.pdf'
-image_folder = "images/"
+# image_folder = "images/"
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id):
     await websocket.accept()
     temp_images = []
     
     try:
         while True:
+            print(client_id)
             data = await websocket.receive_text()
             message = json.loads(data)
-
-            print("image", message)
 
 
             if message['type'] == 'image':
                 base64_string = message['image']
                 if "data:image" in base64_string:
                     base64_string = base64_string.split(",")[1]
-
-                    if not os.path.exists("images"):
-                        os.makedirs("images")
+                    image_folder = f"images_{client_id}"
+                    pdf_file_path = f"output_{client_id}.pdf"
+                    
+                    if not os.path.exists(image_folder):
+                        os.makedirs(image_folder)
 
                     image_data = base64.b64decode(base64_string)
                     temp_image_path = os.path.join(image_folder, f"{len(temp_images)}.png")
@@ -53,7 +54,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 # Clean up temp folder
                 shutil.rmtree(image_folder)
-                await websocket.send_text(json.dumps({"status": "PDF created", "url": f"http://127.0.0.1:8000/{pdf_file_path}"}))
+                
+                await websocket.send_text(json.dumps({"status": "PDF created", "url": f"http://127.0.0.1:8000/getpdf?pdf_file_path={pdf_file_path}"}))
                 break
     except Exception as e:
         print(f"Connection closed: {e}")
@@ -62,9 +64,11 @@ async def websocket_endpoint(websocket: WebSocket):
         # if os.path.exists(pdf_file_path):
         #     os.remove(pdf_file_path)
 
-@app.get("/output.pdf")
-async def get_pdf():
+@app.get(f"/getpdf")
+async def get_pdf(pdf_file_path = Query(...)):
+    print('getpdg', pdf_file_path)
     response = FileResponse(pdf_file_path, media_type='application/pdf', filename='screenshots.pdf')
+    
     # response.headers["file-cleanup"] = "true"
     return response
 
