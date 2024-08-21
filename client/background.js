@@ -46,9 +46,12 @@ chrome.runtime.onSuspend.addListener(() => {
   });
 });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   const { type } = message;
   if (type === "send") {
+    const client_id = Math.floor(
+      Date.now() + Math.random() * (9999 - 1000) + 1000
+    );
     chrome.storage.local.get({ screenshots: [] }, async (result) => {
       let screenshot_val = result.screenshots;
 
@@ -62,7 +65,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.storage.local.set({ screenshots: screenshot_val }, () => {
         console.log(chrome.storage.local.get("screenshots"));
         let received_image_idx = 0;
-        const client_id = Math.floor(Date.now() + Math.random() * (9999 - 1000) + 1000);
         console.log(client_id);
         const socket = new WebSocket(`ws://127.0.0.1:8000/ws/${client_id}`);
         // console.log(screenshots);
@@ -104,6 +106,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               (downloadId) => {
                 if (downloadId) {
                   console.log(`Download started with ID: ${downloadId}`);
+                  chrome.downloads.onChanged.addListener(async (delta) => {
+                    if (delta.id === downloadId && delta.state) {
+                      if (delta.state.current === "complete") {
+                        console.log("Download completed.");
+
+                        // Delete the PDF file from the server
+                        try {
+                          const response = await fetch(
+                            `http://127.0.0.1:8000/deletepdf/${client_id}`
+                          );
+                          if (response.ok) {
+                            console.log("PDF file deleted from server.");
+                          } else {
+                            console.error(
+                              "Failed to delete PDF file from server."
+                            );
+                          }
+                        } catch (error) {
+                          console.error("Error during fetch:", error);
+                        }
+                      }
+                    }
+                  });
                 } else {
                   console.log("Failed to start download");
                 }
@@ -125,9 +150,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           console.error("WebSocket error:", error);
         };
 
-        socket.onclose = () => {
+        socket.onclose = async () => {
           console.log("WebSocket connection closed");
-          console.log("Aster upload", chrome.storage.local.get("screenshots"));
         };
       });
     });

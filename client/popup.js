@@ -214,6 +214,7 @@ const onDelete = async (e) => {
 
 send_btn.onclick = (e) => {
   chrome.runtime.sendMessage({ type: "send" });
+  chrome.runtime.sendMessage({type: "delete"});
 };
 
 chrome.storage.onChanged.addListener((changes, namespace) => {

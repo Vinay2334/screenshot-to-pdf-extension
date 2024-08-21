@@ -18,9 +18,9 @@ async def websocket_endpoint(websocket: WebSocket, client_id):
     
     try:
         while True:
-            print(client_id)
             data = await websocket.receive_text()
             message = json.loads(data)
+            print("Websitciew")
 
 
             if message['type'] == 'image':
@@ -48,7 +48,6 @@ async def websocket_endpoint(websocket: WebSocket, client_id):
 
                 # Create the PDF
                 image_files = sorted(image_files, key=extract_index)
-                print(image_files)
                 with open(pdf_file_path, "wb") as file:
                     file.write(img2pdf.convert(image_files))
 
@@ -61,22 +60,15 @@ async def websocket_endpoint(websocket: WebSocket, client_id):
         print(f"Connection closed: {e}")
     finally:
         await websocket.close()
-        # if os.path.exists(pdf_file_path):
-        #     os.remove(pdf_file_path)
 
 @app.get(f"/getpdf")
 async def get_pdf(pdf_file_path = Query(...)):
-    print('getpdg', pdf_file_path)
     response = FileResponse(pdf_file_path, media_type='application/pdf', filename='screenshots.pdf')
-    
-    # response.headers["file-cleanup"] = "true"
     return response
 
-# @app.middleware("http")
-# async def add_cleanup_header(request, call_next):
-#     response = await call_next(request)
-#     if response.headers.get("file-cleanup") == "true":
-#         if os.path.exists(pdf_file_path):
-#             os.remove(pdf_file_path)
-#             print("output.pdf removed")
-#     return response
+@app.get("/deletepdf/{client_id}")
+async def pdf_cleanup(client_id):
+    pdf_file_path = f'output_{client_id}.pdf'
+    if os.path.exists(pdf_file_path):
+        os.remove(pdf_file_path)
+        print("output.pdf removed")
