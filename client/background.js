@@ -1,7 +1,17 @@
+let lastCaptureTime = 0;
 chrome.commands.onCommand.addListener((command, tab) => {
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     if (tabs.length > 0) {
       const tab = tabs[0];
+
+      const currentTime = Date.now();
+
+      //Prevent to MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND EXCEEDED condition
+      const delay = currentTime - lastCaptureTime;
+      console.log(delay);
+      if (delay <= 1000) {
+        return;
+      }
 
       chrome.tabs.captureVisibleTab(
         tab.windowId,
@@ -33,6 +43,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
               );
             });
           });
+          lastCaptureTime = currentTime;
         }
       );
     }
@@ -49,6 +60,7 @@ chrome.runtime.onSuspend.addListener(() => {
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   const { type } = message;
   if (type === "send") {
+    chrome.storage.local.set({screenshots_upload_status : "Uploading"});
     const client_id = Math.floor(
       Date.now() + Math.random() * (9999 - 1000) + 1000
     );
@@ -70,12 +82,12 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         // console.log(screenshots);
         socket.onopen = () => {
           console.log("WebSocket connection established");
-
           screenshot_val.forEach((screenshot, index) => {
-            socket.send(
-              JSON.stringify({ type: "image", image: screenshot.dataUrl })
-            );
-
+            if (screenshot.dataUrl) {
+              socket.send(
+                JSON.stringify({ type: "image", image: screenshot.dataUrl })
+              );
+            }
             //Revert to idle after upload is finished
             screenshot_val[index].status = "idle";
             chrome.storage.local.set({ screenshots: screenshot_val });
@@ -106,6 +118,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
               (downloadId) => {
                 if (downloadId) {
                   console.log(`Download started with ID: ${downloadId}`);
+                  chrome.storage.local.set({screenshots_upload_status : "Convert to PDF"});
                   chrome.downloads.onChanged.addListener(async (delta) => {
                     if (delta.id === downloadId && delta.state) {
                       if (delta.state.current === "complete") {
@@ -147,6 +160,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
           }));
           console.log(screenshot_val);
           chrome.storage.local.set({ screenshots: screenshot_val });
+          chrome.storage.local.set({screenshots_upload_status : "Convert to PDF"});
           console.error("WebSocket error:", error);
         };
 

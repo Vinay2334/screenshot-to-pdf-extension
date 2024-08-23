@@ -48,6 +48,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id):
 
                 # Create the PDF
                 image_files = sorted(image_files, key=extract_index)
+                print(image_files)
                 with open(pdf_file_path, "wb") as file:
                     file.write(img2pdf.convert(image_files))
 

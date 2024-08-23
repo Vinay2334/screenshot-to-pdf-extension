@@ -8,11 +8,16 @@ const clear_all_tag = document.getElementById("clear-all");
 const shortcut_keys = document.getElementById("shortcut_key");
 const shortcut_change_link = document.getElementById("shortcut_change_link");
 const intro_box = document.getElementById("intro_box");
+const send_btn_text = document.getElementById("send_btn_text")
 
 document.addEventListener("DOMContentLoaded", () => {
   chrome.storage.local.get({ screenshots: [] }, (result) => {
     const screenshots = result.screenshots;
     viewScreenshots(screenshots);
+  });
+  chrome.storage.local.get({ screenshots_upload_status:"Convert to PDF" }, (result) => {
+    const sc_upload_status = result.screenshots_upload_status;
+    renderSendBtn(sc_upload_status);
   });
 });
 
@@ -217,11 +222,26 @@ send_btn.onclick = (e) => {
   chrome.runtime.sendMessage({type: "delete"});
 };
 
+function renderSendBtn(sc_upload_status){
+  send_btn_text.textContent = sc_upload_status;
+  const btn_dots = document.getElementById("btn_dots");
+  if(sc_upload_status === "Uploading"){
+    btn_dots.className = "show";
+  }
+  else{
+    btn_dots.className = "";
+  }
+}
+
 chrome.storage.onChanged.addListener((changes, namespace) => {
   for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
     if (key == "screenshots") {
       console.log(oldValue);
       viewScreenshots(newValue);
+    }
+    if(key == "screenshots_upload_status"){
+      console.log(oldValue);
+      renderSendBtn(newValue);
     }
   }
 });
