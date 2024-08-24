@@ -1,3 +1,5 @@
+const api_domain = "127.0.0.1:8000";
+
 let lastCaptureTime = 0;
 chrome.commands.onCommand.addListener((command, tab) => {
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -78,7 +80,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         console.log(chrome.storage.local.get("screenshots"));
         let received_image_idx = 0;
         console.log(client_id);
-        const socket = new WebSocket(`ws://127.0.0.1:8000/ws/${client_id}`);
+        const socket = new WebSocket(`ws://${api_domain}/ws/${client_id}`);
         // console.log(screenshots);
         socket.onopen = () => {
           console.log("WebSocket connection established");
@@ -118,7 +120,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
               (downloadId) => {
                 if (downloadId) {
                   console.log(`Download started with ID: ${downloadId}`);
-                  chrome.storage.local.set({screenshots_upload_status : "Convert to PDF"});
+                  // chrome.storage.local.set({screenshots_upload_status : "Convert to PDF"});
                   chrome.downloads.onChanged.addListener(async (delta) => {
                     if (delta.id === downloadId && delta.state) {
                       if (delta.state.current === "complete") {
@@ -127,7 +129,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                         // Delete the PDF file from the server
                         try {
                           const response = await fetch(
-                            `http://127.0.0.1:8000/deletepdf/${client_id}`
+                            `http://${api_domain}/deletepdf/${client_id}`
                           );
                           if (response.ok) {
                             console.log("PDF file deleted from server.");
@@ -165,6 +167,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         };
 
         socket.onclose = async () => {
+          chrome.storage.local.set({screenshots_upload_status : "Convert to PDF"});
           console.log("WebSocket connection closed");
         };
       });

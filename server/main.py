@@ -20,8 +20,6 @@ async def websocket_endpoint(websocket: WebSocket, client_id):
         while True:
             data = await websocket.receive_text()
             message = json.loads(data)
-            print("Websitciew")
-
 
             if message['type'] == 'image':
                 base64_string = message['image']
@@ -54,8 +52,10 @@ async def websocket_endpoint(websocket: WebSocket, client_id):
 
                 # Clean up temp folder
                 shutil.rmtree(image_folder)
+                pdf_url = str(websocket.url_for('get_pdf')) + f"?pdf_file_path={pdf_file_path}"
+                print(pdf_url)
                 
-                await websocket.send_text(json.dumps({"status": "PDF created", "url": f"http://127.0.0.1:8000/getpdf?pdf_file_path={pdf_file_path}"}))
+                await websocket.send_text(json.dumps({"status": "PDF created", "url": pdf_url}))
                 break
     except Exception as e:
         print(f"Connection closed: {e}")

@@ -16,7 +16,7 @@
     "unlimitedStorage"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://127.0.0.1:8000 ws://127.0.0.1:8000"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://127.0.0.1:8000 ws://127.0.0.1:8000 https://sc-to-pdfapi-vinay2334s-projects.vercel.app ws://sc-to-pdfapi-vinay2334s-projects.vercel.app"
   },
   "content_scripts": [
     {
