@@ -226,9 +226,11 @@ function renderSendBtn(sc_upload_status){
   send_btn_text.textContent = sc_upload_status;
   const btn_dots = document.getElementById("btn_dots");
   if(sc_upload_status === "Uploading"){
+    // send_btn.disabled = true;
     btn_dots.className = "show";
   }
   else{
+    // send_btn.disabled = false;
     btn_dots.className = "";
   }
 }

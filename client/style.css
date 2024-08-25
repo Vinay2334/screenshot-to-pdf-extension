@@ -32,6 +32,12 @@ body {
   font-size: 15px;
 }
 
+#send_btn:disabled {
+  background-color: #A5D6A7;
+  cursor: not-allowed;
+  color: white; 
+}
+
 #message_container {
   display: flex;
   flex-direction: row;
@@ -170,8 +176,8 @@ body {
   width: 4px;
   height: 4px;
   border-radius: 5px;
-  background-color: black;
-  color: black;
+  background-color: grey;
+  color: grey;
   box-shadow: 9999px 0 0 -5px;
   animation: dot-pulse 1.5s infinite linear;
   animation-delay: 0.25s;
@@ -185,8 +191,8 @@ body {
   width: 4px;
   height: 4px;
   border-radius: 5px;
-  background-color: black;
-  color: black;
+  background-color: grey;
+  color: grey;
 }
 .dot-pulse::before {
   box-shadow: 9984px 0 0 -5px;
