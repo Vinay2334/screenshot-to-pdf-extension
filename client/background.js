@@ -1,7 +1,9 @@
-const api_domain = "screenshot-to-pdf-extension.onrender.com";
-// const api_domain = "127.0.0.1:8000"
+// const api_domain = "screenshot-to-pdf-extension.onrender.com";
+const api_domain = "127.0.0.1:8000"
 
-let lastCaptureTime = 0;
+let last_capture_time = 0;
+let socket = null;
+
 chrome.commands.onCommand.addListener((command, tab) => {
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     if (tabs.length > 0) {
@@ -10,7 +12,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
       const currentTime = Date.now();
 
       //Prevent to MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND EXCEEDED condition
-      const delay = currentTime - lastCaptureTime;
+      const delay = currentTime - last_capture_time;
       console.log(delay);
       if (delay <= 1000) {
         return;
@@ -46,19 +48,25 @@ chrome.commands.onCommand.addListener((command, tab) => {
               );
             });
           });
-          lastCaptureTime = currentTime;
+          last_capture_time = currentTime;
         }
       );
     }
   });
 });
 
-chrome.runtime.onSuspend.addListener(() => {
-  console.log("Extension is being suspended. Clearing storage...");
-  chrome.storage.local.clear(() => {
-    console.log("Storage cleared.");
-  });
-});
+function keepAlive() {
+  const keepAliveIntervalId = setInterval(
+    () => {
+      if (socket) {
+        socket.send(JSON.stringify({ type: "keepalive" }));
+      } else {
+        clearInterval(keepAliveIntervalId);
+      }
+    },
+    1 * 10
+  );
+}
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   const { type } = message;
@@ -81,10 +89,11 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         console.log(chrome.storage.local.get("screenshots"));
         let received_image_idx = 0;
         console.log(client_id);
-        const socket = new WebSocket(`wss://${api_domain}/ws/${client_id}`);
+        socket = new WebSocket(`ws://${api_domain}/ws/${client_id}`);
         // console.log(screenshots);
         socket.onopen = () => {
           console.log("WebSocket connection established");
+          keepAlive(socket);
           screenshot_val.forEach((screenshot, index) => {
             if (screenshot.dataUrl) {
               socket.send(
@@ -130,7 +139,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                         // Delete the PDF file from the server
                         try {
                           const response = await fetch(
-                            `https://${api_domain}/deletepdf/${client_id}`
+                            `http://${api_domain}/deletepdf/${client_id}`
                           );
                           if (response.ok) {
                             console.log("PDF file deleted from server.");
@@ -157,6 +166,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         };
 
         socket.onerror = (error) => {
+          socket = null;
           screenshot_val = screenshot_val.map((sc) => ({
             ...sc,
             status: "idle",
@@ -168,6 +178,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         };
 
         socket.onclose = async () => {
+          socket = null;
           chrome.storage.local.set({screenshots_upload_status : "Convert to PDF"});
           console.log("WebSocket connection closed");
         };

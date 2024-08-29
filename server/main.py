@@ -6,7 +6,7 @@ import base64
 import img2pdf
 import json
 import shutil
-import uuid
+import time
 
 app = FastAPI()
 # image_folder = "images/"
@@ -20,6 +20,9 @@ async def websocket_endpoint(websocket: WebSocket, client_id):
         while True:
             data = await websocket.receive_text()
             message = json.loads(data)
+
+            if message['type'] == 'keepalive':
+                await websocket.send_text(json.dumps({"status": "Socket connection alive"}))
 
             if message['type'] == 'image':
                 base64_string = message['image']
@@ -57,6 +60,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id):
                 
                 await websocket.send_text(json.dumps({"status": "PDF created", "url": pdf_url}))
                 break
+    
     except Exception as e:
         print(f"Connection closed: {e}")
     finally:

@@ -1,6 +1,5 @@
 env
-images
 __pycache__
-images
+images*
 output*.pdf
 .vercel
