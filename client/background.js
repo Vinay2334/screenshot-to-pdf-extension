@@ -1,5 +1,6 @@
 // const api_domain = "screenshot-to-pdf-extension.onrender.com";
-const api_domain = "127.0.0.1:8000"
+// const api_domain = "127.0.0.1:8000"
+const api_domain = "calzone.uk.to"
 
 let last_capture_time = 0;
 let socket = null;
@@ -64,7 +65,7 @@ function keepAlive() {
         clearInterval(keepAliveIntervalId);
       }
     },
-    1 * 10
+    20 * 1000
   );
 }
 
@@ -89,7 +90,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         console.log(chrome.storage.local.get("screenshots"));
         let received_image_idx = 0;
         console.log(client_id);
-        socket = new WebSocket(`ws://${api_domain}/ws/${client_id}`);
+        socket = new WebSocket(`wss://${api_domain}/ws/${client_id}`);
         // console.log(screenshots);
         socket.onopen = () => {
           console.log("WebSocket connection established");
@@ -139,7 +140,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                         // Delete the PDF file from the server
                         try {
                           const response = await fetch(
-                            `http://${api_domain}/deletepdf/${client_id}`
+                            `https://${api_domain}/deletepdf/${client_id}`
                           );
                           if (response.ok) {
                             console.log("PDF file deleted from server.");

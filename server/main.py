@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, Query
 from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.middleware.cors import CORSMiddleware
 from utils import extract_index
 import os
 import base64
@@ -10,6 +11,15 @@ import time
 
 app = FastAPI()
 # image_folder = "images/"
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins. Adjust as needed for security.
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods. Adjust as needed.
+    allow_headers=["*"],  # Allows all headers. Adjust as needed.
+)
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id):

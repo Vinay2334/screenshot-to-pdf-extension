@@ -16,7 +16,7 @@
     "unlimitedStorage"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://127.0.0.1:8000 ws://127.0.0.1:8000 https://screenshot-to-pdf-extension.onrender.com wss://screenshot-to-pdf-extension.onrender.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://127.0.0.1:8000 ws://127.0.0.1:8000 https://screenshot-to-pdf-extension.onrender.com wss://screenshot-to-pdf-extension.onrender.com http://172.235.7.112 ws://172.235.7.112 https://calzone.uk.to wss://calzone.uk.to"
   },
   "background": {
     "service_worker": "background.js"
