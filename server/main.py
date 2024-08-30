@@ -21,6 +21,10 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers. Adjust as needed.
 )
 
+@app.get("/")
+async def root():
+    return {"message": "Server started.............."}
+
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id):
     await websocket.accept()
