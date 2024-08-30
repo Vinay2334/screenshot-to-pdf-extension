@@ -91,3 +91,5 @@ async def pdf_cleanup(client_id):
     if os.path.exists(pdf_file_path):
         os.remove(pdf_file_path)
         print("output.pdf removed")
+
+# Change to trigger commit
