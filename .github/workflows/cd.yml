@@ -1,0 +1,32 @@
+name: Continous deployment
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - server/**
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install SSH key
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Update code on server
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+          cd /home/screenshot-to-pdf-extension/server  # Navigate to your project directory
+          git pull origin main  # Pull the latest code
+          source venv/bin/activate  # Activate your virtual environment
+          pip install -r requirements.txt  # Install any new dependencies
+          sudo systemctl restart fastapi-server  # Restart the FastAPI service
+        EOF
+        
