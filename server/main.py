@@ -23,7 +23,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "Server started.............."}
+    return {"message": "Server started successfully.............."}
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id):
